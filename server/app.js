@@ -35,7 +35,11 @@ let app = express();
 //   credentials: true, // if you're sending cookies/auth
 // };
 
-app.use(cors());
+app.use(cors({
+  origin: process.env.client_url,
+  credentials: true
+}));
+
 app.use(express.json());
 app.use('/auth',dbRoutes);
 app.use('/movie',movieRoutes);
