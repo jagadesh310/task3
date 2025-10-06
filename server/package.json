@@ -29,8 +29,7 @@
     "multer": "^2.0.1",
     "nodemailer": "^7.0.4",
     "nodemailer-express-handlebars": "^7.0.0",
-    "puppeteer": "^24.23.0",
-    "puppeteer-core": "^24.23.0",
+  "puppeteer-core": "^10.4.0",
     "qrcode": "^1.5.4"
   }
 }
