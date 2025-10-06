@@ -18,7 +18,7 @@ const trainRoutes = require('./routes/trainsRoute.js')
 const transactionRoutes = require('./routes/transactionsRoute.js')
 const otpRoutes = require('./routes/otpRoute.js')
 const transactionModel = require('./models/transaction.js')
-const {invoiceHandler} = require('./sendMail.js')
+// const {invoiceHandler} = require('./sendMail.js')
 const generatePdf = require('./pdfGenerator.js')
 require('dotenv').config();
 
@@ -49,7 +49,7 @@ app.use('/train',trainRoutes);
 app.use('/transaction',transactionRoutes);
 app.use('/otp',otpRoutes);
 
-app.post('/email/invoice',invoiceHandler);
+// app.post('/email/invoice',invoiceHandler);
 
 app.get('/pdf/download',async (req,res)=>{
   console.log('entered')
