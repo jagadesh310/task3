@@ -3,6 +3,7 @@ const jwt = require("jsonwebtoken")
 require('dotenv').config();
 const axios = require('axios');
 const cloudinary = require('cloudinary').v2;
+const fs = require('fs');
 
 let userModel = require('../models/user.js')
 
@@ -225,26 +226,31 @@ const updatePassword = async (req, res) => {
   }
 };
 
-const uploadImage = async (req,res)=>{
 
-cloudinary.config({
-  cloud_name:'diizmtj04',
-  api_key:'439939817641678',
-  api_secret:'jQVIQWtKodGl5Q90KUMTQya35Sk'});
 
-try {
-    if (!req.file) {
-      return res.status(400).json({ error: 'No file sent' });
-    }
+const uploadImage = async (req, res) => {
+  cloudinary.config({
+    cloud_name: process.env.CLOUD_NAME,
+    api_key: process.env.CLOUD_KEY,
+    api_secret: process.env.CLOUD_SECRET
+  });
+
+  try {
+    if (!req.file) return res.status(400).json({ error: 'No file sent' });
 
     const result = await cloudinary.uploader.upload(req.file.path, {
       resource_type: 'image',
       folder: 'your_folder',
     });
 
-    let updateRes = await userModel.updateOne({_id:req.query.id},{$set:{profileImageUrl:result.secure_url}})
+    await userModel.updateOne(
+      { _id: req.user.id }, 
+      { $set: { profileImageUrl: result.secure_url } }
+    );
 
-    console.log('Cloud upload result:', updateRes);
+  
+    fs.unlinkSync(req.file.path);
+
     res.status(200).json({ message: 'Uploaded!', url: result.secure_url });
   } catch (err) {
     console.error(err);

@@ -5,8 +5,8 @@ let {registerUser,loginUser,updatePassword,autoLoginUser,updateUser,changePasswo
 
 let dbRoutes = express.Router();
 
-
-const upload = multer({dest: "uploads/"})
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
 
 
 dbRoutes.post('/register',registerUser);
