@@ -55,7 +55,6 @@ export const Transactions = () => {
   }, [])
 
   return (
-
     <div className="backgroundDiv min-h-screen text-white">
     {loading ? <Loader/> : ( <div className="container flex flex-col gap-2">
         <div className="header w-full flex flex-col ">
@@ -120,7 +119,7 @@ export const Transactions = () => {
                             return (<tr className='py-[12px] px-[15px] text-start border-b-[1px] border-[#ddd] border-[1px]' key={idx}>
                               <td className='py-[12px] px-[15px] text-start border-b-[1px] border-[#ddd]'>{idx+1}</td>
                               <td className='py-[12px] px-[18px] text-start border-b-[1px] border-[#ddd]'>{transaction._id}</td>
-                              <td className='py-[12px] px-[18px] text-start border-b-[1px] border-[#ddd]'>{transaction.metaData.date.split('T')[0]}</td>
+                              <td className='py-[12px] px-[18px] text-start border-b-[1px] border-[#ddd]'>{transaction?.metaData.date?.split('T')[0]}</td>
                               <td className='py-[12px] px-[18px] text-start border-b-[1px] border-[#ddd]'>{transaction.user?.email}</td>
                               <td className='py-[12px] px-[18px] text-start border-b-[1px] border-[#ddd]'>{transaction.vendor?.email}</td>
                               <td className='py-[12px] px-[18px] text-start border-b-[1px] border-[#ddd]'>{transaction.purpose.charAt(0).toUpperCase()+ transaction.purpose.slice(1)}</td>

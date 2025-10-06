@@ -330,7 +330,7 @@ const TrainContent = ({ loading, setLoading, data }) => {
                   <TrainElement
                     key={idx}
                     train={train}
-                    from={from || train.stations[0].stationName}
+                    from={from || train?.stations[0].stationName}
                     to={
                       to ||
                       train.stations[train.stations.length - 1].stationName
