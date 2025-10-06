@@ -11,36 +11,26 @@ import Loader from '../components/loader'
 
 // import jwt from "jsonwebtoken";
 
-export function ProtectedRoute ({allowedRoles}) {
-  const { user, setUser,authLoading,refresh } = useContext(authContext);
-  let navigate = useNavigate();
-  let location = useLocation();
+export function ProtectedRoute({ allowedRoles }) {
+  const { user, authLoading } = useContext(authContext);
+  const location = useLocation();
 
-  useEffect(()=>{
-    if (!authLoading){
+  if (authLoading) {
+    return <Loader />;
+  }
 
-      if(!user){
-       navigate('/login',{state:{from:location.pathname}});
-      } else{
-       if(!allowedRoles.includes(user.role)){
-          navigate('/unauthorized')
-        }
-      }
+  if (!user) {
+    return <Navigate to="/login" state={{ from: location.pathname }} replace />;
+  }
 
-  }},[authLoading,user,refresh])
+  if (!allowedRoles.map(r => r.toLowerCase()).includes(user.role?.toLowerCase())) {
+    return <Navigate to="/unauthorized" replace />;
+  }
 
-
-    return(
-    <div className='bg-black w-screen overflow-hidden'>
-      {authLoading?<Loader/>:
-        <>
-         {user &&
-         <>
-         <Header/>
-         <Outlet/>
-         <Footer/>
-         </>}
-         </>}
-    </div>)
-
+  return ( <>
+       <Header/>
+       <Outlet/>
+       <Footer/>
+      </>)
 }
+

@@ -13,6 +13,7 @@ import { ToastContainer, toast } from 'react-toastify';
 
 
 import { ProtectedRoute } from './routes/protectedRoute.jsx'
+import { PublicRoute } from './routes/publicRoute.jsx'
 //client
 import {Home} from './pages/client/home.jsx'
 import MoviesInfo from './pages/client/entityInfo.jsx'
@@ -88,7 +89,7 @@ let router = createBrowserRouter([
             path:'home',
             element: <AdminHome />
           },
-            {
+          {
             path: 'dashboard',
             element: <AdminDashboard />
           },
@@ -182,65 +183,63 @@ let router = createBrowserRouter([
       }
     ]
   },
-  {
+ {
     path: '/',
+    element: <PublicRoute/>,
     children: [
       {
-        element:<ProtectedRoute allowedRoles={['client']} />,
-        children: [
-          {
-            index:true,
-            element : <Navigate to='/home'/>
-          },
-          {
-            path: 'home',
-            element: <Home />
-          },
-          {
-            path: 'contactus',
-            element: <ContactUs />
-          },
-          {
-            path: ':entityType/:_id',
-            element: <MoviesInfo />
-          },
-          {
-            path: ':entityType/:_id/:type',
-            element: <TicketSelection />
-          },
-          {
-            path: ':entityType/:_id/:type/:showId',
-            element: <SeatSelection />
-          },
-          {
-            path: 'train/:trainId',
-            element: <TrainBooking />
-          },
-          {
-            path: 'myBookings',
-            element: <MyBookings />
-          },
-          // {
-          //   path: 'ticketSummary',
-          //   element: <TicketSummary />
-          // },
-          {
-            path: 'recentTransactions',
-            element: <RecentTransactions />
-          },
-          {
-          path: '/paymentRedirecting',
-          element: <PaymentRedirecting/>
-          },
-          {
-            path: 'profile',
-            element: <Profile />
-          },
-          {
-            path: 'changePassword',
-            element: <ChangePassword />
-          },
-        ]
+        index: true,
+        element: <Home />,
+      },
+      {
+        path: 'home',
+        element: <Home />
+      },
+      {
+        path: ':entityType/:_id',
+        element: <MoviesInfo />
+      },
+    ]
+  },
+  {
+    path: '/',
+    element: <ProtectedRoute allowedRoles={['client']} />,
+    children: [
+      {
+        path: ':entityType/:_id/:type',
+        element: <TicketSelection />
+      },
+      {
+        path: ':entityType/:_id/:type/:showId',
+        element: <SeatSelection />
+      },
+      {
+        path: 'train/:trainId',
+        element: <TrainBooking />
+      },
+      {
+        path: 'myBookings',
+        element: <MyBookings />
+      },
+      {
+        path: 'recentTransactions',
+        element: <RecentTransactions />
+      },
+      {
+        path: 'paymentRedirecting',
+        element: <PaymentRedirecting />
+      },
+      {
+        path: 'profile',
+        element: <Profile />
+      },
+      {
+        path: 'changePassword',
+        element: <ChangePassword />
+      },
+      {
+        path: 'contactus',
+        element: <ContactUs />
       }
     ]
   },

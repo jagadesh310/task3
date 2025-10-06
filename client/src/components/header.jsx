@@ -1,10 +1,8 @@
 import { FiMenu } from "react-icons/fi";
-
-import { NavLink, useNavigate, Link, useLocation } from 'react-router-dom'
-import { useContext, useState, useEffect } from 'react'
-
-import '../App.css'
-import { authContext } from '../contexts/authContext'
+import { NavLink, useNavigate, Link, useLocation } from 'react-router-dom';
+import { useContext, useState, useEffect } from 'react';
+import '../App.css';
+import { authContext } from '../contexts/authContext';
 
 import { TbLogout } from "react-icons/tb";
 import { FaHome } from "react-icons/fa";
@@ -18,112 +16,162 @@ import { RiContactsFill } from "react-icons/ri";
 import { GiCometSpark } from "react-icons/gi";
 
 function Header() {
-  let { user, setUser, logout, setAuthMessage } = useContext(authContext);
-  let { pathname } = useLocation();
-  let [menu, setMenu] = useState(false);
+  const { user, logout, setAuthMessage } = useContext(authContext);
+  const { pathname } = useLocation();
+  const [menu, setMenu] = useState(false);
 
+  // Default links when no user
+  const guestLinks = [
+    { path: '/login', name: 'Login' },
+    { path: '/signup', name: 'Signup' },
+  ];
 
-  let links = {
-    'client': [{ path: '/home', name: 'Home' }, { path: '/myBookings', name: 'My Bookings' }, { path: '/recentTransactions', name: 'Transactions' }, { path: '/changePassword', name: 'Change Password' }, { path: '/contactUs', name: 'Contact Us' }],
-    'admin': [{ path: '/admin/home', name: 'Home' }, { path: '/admin/dashboard', name: 'Dashboard' }, { path: '/admin/movies', name: 'Movies' }, { path: '/admin/concerts', name: 'Concerts' }, { path: '/admin/trains', name: 'Trains' }, { path: '/admin/Transactions', name: 'Transactions' }, { path: '/changePassword', name: 'Change Password' }, { path: '/contactUs', name: 'Contact Us' }],
-    'vendor': [{ path: '/vendor/home', name: 'Home' }, { path: '/vendor/dashboard', name: 'Dashboard' },{ path: '/vendor/transactions', name: 'Transactions' },{ path: '/changePassword', name: 'Change Password' }, { path: '/contactUs', name: 'Contact Us' }]
+  const links = {
+    client: [
+      { path: '/home', name: 'Home' },
+      { path: '/myBookings', name: 'My Bookings' },
+      { path: '/recentTransactions', name: 'Transactions' },
+      { path: '/changePassword', name: 'Change Password' },
+      { path: '/contactUs', name: 'Contact Us' }
+    ],
+    admin: [
+      { path: '/admin/home', name: 'Home' },
+      { path: '/admin/dashboard', name: 'Dashboard' },
+      { path: '/admin/movies', name: 'Movies' },
+      { path: '/admin/concerts', name: 'Concerts' },
+      { path: '/admin/trains', name: 'Trains' },
+      { path: '/admin/transactions', name: 'Transactions' },
+      { path: '/changePassword', name: 'Change Password' },
+      { path: '/contactUs', name: 'Contact Us' }
+    ],
+    vendor: [
+      { path: '/vendor/home', name: 'Home' },
+      { path: '/vendor/dashboard', name: 'Dashboard' },
+      { path: '/vendor/transactions', name: 'Transactions' },
+      { path: '/changePassword', name: 'Change Password' },
+      { path: '/contactUs', name: 'Contact Us' }
+    ]
   };
 
-  let icons = {
-    'Home': <FaHome />,
+  const icons = {
+    Home: <FaHome />,
     'My Bookings': <FaBookmark />,
     'Change Password': <RiLockPasswordFill />,
     'Contact Us': <RiContactsFill />,
-    'Movies': <MdLocalMovies />,
-    'Trains': <MdDirectionsRailway />,
-    'Transactions': <GrTransaction />,
-    'Dashboard': <MdDashboard />,
-    'Concerts':<GiCometSpark/>
-  }
-
+    Movies: <MdLocalMovies />,
+    Trains: <MdDirectionsRailway />,
+    Transactions: <GrTransaction />,
+    Dashboard: <MdDashboard />,
+    Concerts: <GiCometSpark />
+  };
 
   useEffect(() => {
     setMenu(false);
-    window.scroll(0, 0)
-  }, [pathname])
+    window.scroll(0, 0);
+  }, [pathname]);
 
   return (
-    <div className='header w-screen h-[65px] bg-black shadow-sm shadow-[#ffffff] fixed z-1 top-0 flex justify-center'>
+    <div className='header w-screen h-[65px] bg-black shadow-sm shadow-[#ffffff] fixed z-10 top-0 flex justify-center'>
       <div className='headerContainer flex justify-between items-center w-[85%]'>
-        <div className='logoContainer text-white hover:text-[#4242FA] font-serif font-bold text-2xl cursor:pointer'>
-          <FiMenu onClick={() => { setMenu(true) }} />
+        <div className='logoContainer text-white hover:text-[#4242FA] font-serif font-bold text-2xl cursor-pointer'>
+          <FiMenu onClick={() => setMenu(true)} />
         </div>
-
-        {/* <div className="searchBar rounded-xl border-2"></div> */}
 
         {/* <ul className='headerMiddle w-[50%] hidden md:flex text-white font-medium text-md lg:text-xl font-poppins justify-evenly items-center'>
-          <NavLink to='/'>
-            <li>Home</li>
-          </NavLink>
-          <NavLink to='/mybookings'>
-            <li>My Bookings</li>
-          </NavLink>
-          <NavLink to='/contactus'>
-            <li>Contact Us</li>
-          </NavLink>
+          {user
+            ? links[user.role].slice(0, 3).map((ele, idx) => (
+                <NavLink key={idx} to={ele.path}>
+                  <li>{ele.name}</li>
+                </NavLink>
+              ))
+            : guestLinks.map((ele, idx) => (
+                <NavLink key={idx} to={ele.path}>
+                  <li>{ele.name}</li>
+                </NavLink>
+              ))}
         </ul> */}
 
-        <Link to={user.role === 'client' ? '/profile' : `/${user.role}/profile`} className='flex items-center gap-4'>
-
-          {(user.role === 'client' || 'vendor') &&
-            <div className="clientamount">
-              <span className="amount border-1 border-gray-400 hover:border-[#eee] px-3 py-2 text-white rounded-xl">₹{user.amountAvailable}</span>
-            </div>}
-
-          <div className='profileContainer'>
-            <span className='profileImage'>
-              <span className="verificationbox relative size-8 -right-8">
-                {user.isVerified==true ? <span className="greendot size-2 bg-green-600 animate-ping absolute rounded-full"></span> : <span className="reddot size-2 bg-red-600 animate-ping absolute rounded-full"></span>}
-              </span>
-              <img src={user.profileImageUrl} className='h-10 w-10 text-white rounded-full' />
-            </span>
-          </div>
-        </Link>
-      </div>
-
-      {menu && <div className="menuContainer w-screen h-screen fixed z-10 flex flex-row-reverse">
-
-              <div className="right-0 top-0 bg-amber-100 w-full h-screen blur-xs opacity-20 z-10" onClick={() => { setMenu(false) }}>
-        </div>
-
-
-        <div className="left top-0 left-0 w-auto lg:w-[30%] h-screen bg-[#12101D] z-11 text-black flex flex-col px-4 py-8 gap-6">
-
-          <ul className='footer flex justify-between items-center py-3 font-normal text-[16px] md:text-[18px] rounded-lg place-content-center px-1 gap-1
-          bg-[#1E1A31] md:px-8'>
-            <span className='profileImage pt-1'>
-              <img src={user.profileImageUrl} className='h-10 w-10 text-white rounded-full' />
-            </span>
-            <div className="profileright flex flex-col">
-              <span className="name font-bold flex place-content-end text-white">{user.username}</span>
-              <span className="cursor-pointer text-[14px] md:text-[16px] text-[#7b7b7e]" onClick={() => { logout(); setAuthMessage('Logout Successfully'); }}>
-                logout
+        {user ? (
+          <Link to={user.role === 'client' ? '/profile' : `/${user.role}/profile`} className='flex items-center gap-4'>
+            {(user.role === 'client' || user.role === 'vendor') && (
+              <div className="clientamount">
+                <span className="amount border-1 border-gray-400 hover:border-[#eee] px-3 py-2 text-white rounded-xl">₹{user.amountAvailable}</span>
+              </div>
+            )}
+            <div className='profileContainer'>
+              <span className='profileImage'>
+                <span className="verificationbox relative size-8 -right-8">
+                  {user.isVerified
+                    ? <span className="greendot size-2 bg-green-600 animate-ping absolute rounded-full"></span>
+                    : <span className="reddot size-2 bg-red-600 animate-ping absolute rounded-full"></span>}
+                </span>
+                <img src={user.profileImageUrl} className='h-10 w-10 text-white rounded-full' />
               </span>
             </div>
-          </ul>
+          </Link>
+        ) : (
+          <Link to='/login' className='text-white font-bold hover:text-[#EA454c]'>
+            Login
+          </Link>
+        )}
+      </div>
 
-          <ul className='body flex flex-col self-start gap-4 text-white w-full px-2'>
-            {links[user.role].map((ele, idx) => {
-              return <NavLink to={ele.path} key={idx} className='py-3 font-normal text-[16px] md:text-[18px] rounded-lg hover:bg-[#1E1A31]   place-content-center flex align-center justify-start px-5 gap-1 w-full'>
-                <span className="icon pt-1">{icons[ele.name]}</span>
-                <span className="name">{ele.name}</span>
-              </NavLink>
-            })}
-          </ul>
+      {menu && (
+        <div className="menuContainer fixed inset-0 z-50 flex">
+          <div
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+            onClick={() => setMenu(false)}
+          ></div>
 
+          <div className="relative bg-[#12101D] w-64 md:w-80 lg:w-1/4 h-full p-6 flex flex-col gap-6 transition-transform duration-300 ease-in-out">
+            {user && (
+              <div className="flex items-center gap-4">
+                <img src={user.profileImageUrl} className="h-10 w-10 rounded-full" />
+                <div className="flex flex-col">
+                  <span className="font-bold text-white">{user.username}</span>
+                  <span
+                    className="text-sm text-gray-400 cursor-pointer hover:text-white"
+                    onClick={() => {
+                      logout();
+                      setAuthMessage("Logout Successfully");
+                      setMenu(false);
+                    }}
+                  >
+                    Logout
+                  </span>
+                </div>
+              </div>
+            )}
+
+            <ul className="flex flex-col gap-2 mt-4">
+              {user
+                ? links[user.role].map((ele, idx) => (
+                    <NavLink
+                      key={idx}
+                      to={ele.path}
+                      className="flex items-center gap-3 px-4 py-2 rounded-lg text-white hover:bg-[#1E1A31]"
+                      onClick={() => setMenu(false)}
+                    >
+                      <span className="icon">{icons[ele.name]}</span>
+                      <span className="name">{ele.name}</span>
+                    </NavLink>
+                  ))
+                : guestLinks.map((ele, idx) => (
+                    <NavLink
+                      key={idx}
+                      to={ele.path}
+                      className="flex items-center gap-3 px-4 py-2 rounded-lg text-white hover:bg-[#1E1A31]"
+                      onClick={() => setMenu(false)}
+                    >
+                      <span className="name">{ele.name}</span>
+                    </NavLink>
+                  ))}
+            </ul>
+          </div>
         </div>
-  
-      </div>}
-
+      )}
     </div>
-  )
+  );
 }
 
-
-
-export default Header
+export default Header;

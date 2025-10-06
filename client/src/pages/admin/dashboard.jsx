@@ -2,7 +2,17 @@ import axios from 'axios'
 
 import { useNavigate,Link } from "react-router-dom";
 import {useContext,useEffect,useRef,useState,useMemo} from 'react'
+import {
+  Chart as ChartJS,
+  ArcElement,
+  Tooltip,
+  Legend,
+  Title 
+} from 'chart.js';
 
+
+import {Bar,Doughnut,Line} from 'react-chartjs-2'
+ChartJS.register(ArcElement, Tooltip, Legend, Title); 
   import '../../App.css'
   
   import Loader from '../../components/loader.jsx'
@@ -57,6 +67,7 @@ export function AdminDashboard(){
       cVendors++;
       if (isVerified) vVendors++;
     }
+    
   });
 
   return {
@@ -133,9 +144,9 @@ export function AdminDashboard(){
             <EntityContainer data={topPerforming} title="Top Performing"/>
         </div>
 
-        <div className="transactionsBox border-amber-100 border-1 text-white">
+        <div className="transactionsBox text-white flex justify-around items-center">
 
-          <div className="header flex justify-between p-4 border-b-2">
+          {/* <div className="header flex justify-between p-4 border-b-2">
            <span className="heading text-[19px] md:text-[21px]">Transactions</span>
            <Link to='/admin/transactions' className="viewAll cursor-pointer text-[19px] md:text-[21px]">View All</Link>
           </div>
@@ -174,7 +185,78 @@ export function AdminDashboard(){
               </span>
              </span>
             </span>
-           </div>
+           </div> */}
+      
+      <div className="transactionsContainer border-amber-100 border-1">
+<Doughnut
+  data={{
+    labels: ['Total', 'Successful', 'Failed'],
+    datasets: [
+      {
+        label: 'Transactions',
+        data: [totalTransactions, totalSuccessfulTransactions, totalFailedTransactions],
+        backgroundColor: ['blue', 'green', 'red'],
+        borderRadius: 1
+      }
+    ]
+  }}
+  options={{
+    plugins: {
+      title: {
+        display: true,
+        text: 'Transactions Overview',
+        font: {
+          size: 18,
+          weight: 'bold'
+        },
+        color: 'white',
+        padding: {
+          top: 10,
+          bottom: 20
+        }
+      },
+      legend: {
+        position: 'bottom'
+      }
+    }
+  }}
+/>
+</div>
+
+      <div className="moneyContainer border-amber-100 border-1">
+        <Doughnut data={{
+          labels:['Successful','Failed'],
+          datasets:[
+            {label:'Amount',
+            data:[totalSuccessfulAmount,totalFailedAmount],
+            backgroundColor:[
+              'green',
+              'red'
+            ]
+          },
+        ]}} 
+      
+  options={{
+    plugins: {
+      title: {
+        display: true,
+        text: 'Revenue Overview',
+        font: {
+          size: 18,
+          weight: 'bold'
+        },
+        color: 'white',
+        padding: {
+          top: 10,
+          bottom: 20
+        }
+      },
+      legend: {
+        position: 'bottom'
+      }
+    }
+  }}/>
+        </div>
 
         </div>
 
@@ -208,8 +290,6 @@ export function AdminDashboard(){
            </div>
 
         </div>
-
-
 
       </div>
      )}

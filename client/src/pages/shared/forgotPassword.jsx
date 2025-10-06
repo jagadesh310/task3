@@ -1,214 +1,183 @@
-import axios from 'axios'
+import axios from 'axios';
 import { MdCancel } from "react-icons/md";
-import {useState,useEffect,useContext,useRef} from 'react'
-import {Link,useNavigate,useParams} from 'react-router-dom'
+import { useState, useEffect, useContext } from 'react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { authContext } from '../../contexts/authContext';
-import 'react-toastify/dist/ReactToastify.css';
 import { ToastContainer, toast } from 'react-toastify';
-import '../../App.css'
+import 'react-toastify/dist/ReactToastify.css';
 
-   let BASE_URL = import.meta.env.VITE_SERVER_BASE_URL
+let BASE_URL = import.meta.env.VITE_SERVER_BASE_URL;
 
+export function ForgotPassword() {
+  let { user } = useContext(authContext);
 
-export function ForgotPassword(){
-  let {user,setUser} = useContext(authContext)
+  let [email, setEmail] = useState('');
+  let [otpOverlay, setOtpOverlay] = useState(false);
 
-  let [newPassword,setNewPassword] = useState('');
-  let [email,setEmail] = useState('');
-  let [otpOverlay,setOtpOverlay] = useState(false);
-
-
-  const handleReset=()=>{
-
-    event.preventDefault();
+  const handleReset = (event) => {
+    event?.preventDefault();
     axios
       .get(`${BASE_URL}/otp/create?email=${email}`)
       .then(res => {
-        if(res.data.message =='success'){
-        setOtpOverlay(true);
-        } else{
-          toast.error(res.data.message)
+        if (res.data.message === 'success') {
+          setOtpOverlay(true);
+        } else {
+          toast.error(res.data.message);
         }
-        console.log(res.data);
-        })
-      .catch(err => {toast.error(err.response.data.message);console.log(err);})
-  }
-
-
+      })
+      .catch(err => toast.error(err.response?.data?.message || err.message));
+  };
 
   return (
-    <div className="w-screen h-screen bg-black flex justify-center items-center gap-4 pt-10 absolute z-4 overflow-hidden">
-      <ToastContainer/>
-      <div className="container flex flex-col gap-4 min-h-screen bg-[#ebebeb]">
+    <div className="w-screen min-h-screen bg-black flex justify-center items-center p-4 relative">
+      <ToastContainer />
+      
+      <div className="w-full max-w-md bg-[#12101D] rounded-xl p-6 flex flex-col gap-6 shadow-lg">
+        <h2 className="text-2xl font-bold text-white text-center">Forgot Password</h2>
+        <p className="text-center text-gray-300">Enter your registered email to receive OTP</p>
 
-
-        {otpOverlay && <OTPOverlay email={email} setOtpOverlay={setOtpOverlay} handleReset={handleReset}/>}
-
-        <div className="passwordChange p-4 bg-gray-950 rounded-md border-amber-100 border-b-1">
-        <div className="header flex justify-between items-center font-bold text-white pb-4">
-          <span className="heading">Forgot Password</span>
-          <Link to='/login' className="back btn">Go Back</Link>
-        </div>
-
-
-        <form className="emailContainer text-white flex flex-col gap-4 pt-6">
-
-          <div className="current text-white flex flex-col items-start gap-4">
-          <label htmlFor="email">Enter Email </label>
-          <input type="email" name="email" id="email" value={email} placeholder='Enter Email' className='border-1 py-1 px-2 rounded-md w-70'
-         onChange={(e)=>{setEmail(e.target.value)}}/>
-          </div>
-
-          <div className="footer flex justify-center items-center text-white pt-6">
-           <span type='submit' className='reset btn' onClick={()=>{
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if(emailRegex.test(email)){
-                handleReset()
-            } else{
-              toast.error('Enter valid email')
-            }
-           }} >Reset Password</span>
-          </div>
+        <form className="flex flex-col gap-4">
+          <input
+            type="email"
+            placeholder="Enter Email"
+            className="w-full px-4 py-2 rounded-md bg-black text-white border border-gray-700 focus:border-[#4242FA] outline-none"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+          <button
+            className="w-full py-2 bg-[#4242FA] text-white rounded-md hover:bg-opacity-90 transition"
+            onClick={(e) => {
+              e.preventDefault();
+              const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+              if (emailRegex.test(email)) handleReset(e);
+              else toast.error('Enter a valid email');
+            }}
+          >
+            Send OTP
+          </button>
+          <Link to="/login" className="text-center text-[#4242FA] hover:underline mt-2">
+            Go Back
+          </Link>
         </form>
-        </div>
       </div>
+
+      {otpOverlay && <OTPOverlay email={email} setOtpOverlay={setOtpOverlay} handleReset={handleReset} />}
     </div>
-  )
+  );
 }
 
-const OTPOverlay = (props) => {
-  let {email,otpOverlay,handleReset} = props
-  let [otp, setOtp] = useState('');
-  let navigate = useNavigate();
-  let [resend,setResend] = useState(false);
-  let [max,setMax] = useState(false);
-  let [timer,setTimer] = useState(120);
-  let maxCount = 2;
-  let [count,setCount] = useState(0)
+const OTPOverlay = ({ email, setOtpOverlay, handleReset }) => {
+  const [otp, setOtp] = useState('');
+  const [resend, setResend] = useState(false);
+  const [timer, setTimer] = useState(120);
+  const [count, setCount] = useState(0);
+  const navigate = useNavigate();
+  const maxCount = 2;
 
-
-    const handleSubmit=(event)=>{
-
-    console.log(event)
+  const handleSubmit = (event) => {
     event.preventDefault();
     axios
-      .get(`http://localhost:5000/otp/verify?email=${email}&otp=${otp}`)
+      .get(`${BASE_URL}/otp/verify?email=${email}&otp=${otp}`)
       .then(res => {
-        console.log(res.data);
-        if(res.data.message==='OTP valid'){
-         navigate(`/resetPassword/${email}`,{replace:true})
-          toastify.success(res.data.message)
-        } else{
-          toastify.info(res.data.message)
+        if (res.data.message === 'OTP valid') {
+          navigate(`/resetPassword/${email}`, { replace: true });
+          toast.success(res.data.message);
+        } else {
+          toast.info(res.data.message);
         }
-        
-        })
-      .catch(err => {alert(err.response.data.message);console.log(err);})
-  }
+      })
+      .catch(err => toast.error(err.response?.data?.message || err.message));
+  };
 
-
-
-   useEffect(() => {
- 
-  let intervalId = setInterval(() => {
-    setTimer(prev => {
-      if (prev <= 1) {
-        clearInterval(intervalId);
-        setResend(true);
-        return 0;
-      }
-      return prev - 1;
-    });
-  }, 1000);
-
-  return () => clearInterval(intervalId);
-}, [count]);
-
-
+  useEffect(() => {
+    let intervalId = setInterval(() => {
+      setTimer(prev => {
+        if (prev <= 1) {
+          clearInterval(intervalId);
+          setResend(true);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(intervalId);
+  }, [count]);
 
   return (
-    <div className='background w-screen h-screen fixed z-4 overflow-hidden flex justify-center items-center left-0 bg-black'>
-      <div className='w-[30%] h-[40%] rounded-xl border-2 border-[#97D0ED] p-1 md:p-2 xl:p-3 flex flex-col items-center justify-around bg-black'>
-              <ToastContainer/>
-        <div className="otpContainer text-white flex flex-col gap-4 ">
-          <div className="current text-white flex flex-col items-start gap-4">
-          <label htmlFor="otp">Enter OTP </label>
-          <input type="number" min='1000' max='9999' name="otp" id="otp" value={otp} placeholder='Enter otp' className='border-1 py-1 px-2 rounded-md w-70 h-11 appearance-none focus:outline-none'
-         onChange={(e)=>{setOtp(e.target.value)}}/>
-          </div>
-          </div>
-
-       <div className="submit">
+    <div className="fixed inset-0 z-50 bg-black bg-opacity-80 flex justify-center items-center p-4">
+      <div className="w-full max-w-sm bg-[#12101D] rounded-xl p-6 flex flex-col gap-6 shadow-lg">
+        <h3 className="text-xl font-bold text-white text-center">Enter OTP</h3>
+        <input
+          type="number"
+          min="1000"
+          max="9999"
+          value={otp}
+          onChange={(e) => setOtp(e.target.value)}
+          placeholder="Enter OTP"
+          className="w-full px-4 py-2 rounded-md bg-black text-white border border-gray-700 focus:border-[#4242FA] outline-none"
+        />
         <button
-          className='btn confirm font-medium text-white text-md md:text-lg xl:text-xl'
+          className="w-full py-2 bg-[#4242FA] text-white rounded-md hover:bg-opacity-90 transition"
           onClick={handleSubmit}
         >
           Confirm
         </button>
-        </div>
-
-        <div className="footer text-white flex flex-col items-center gap-2">
-          <span className="title">Resend OTP in <span className="time">{timer}sec</span></span>
-          {resend && <span className="title text-[#EA454c] font-bold text-md border-1 border-[#eee] rounded-md py-1 px-2" onClick={()=>{setResend(false);setCount(pre=>pre+1);handleReset();setTimer(120)}}>Resend OTP</span>}
-          {max && <span className="title text-[#EA454c] font-bold text-md">Too many requests try later</span>}
+        <div className="text-center text-white text-sm">
+          {resend ? (
+            <span
+              className="text-[#4242FA] cursor-pointer font-semibold hover:underline"
+              onClick={() => { setResend(false); setCount(c => c + 1); handleReset(); setTimer(120); }}
+            >
+              Resend OTP
+            </span>
+          ) : (
+            <>Resend OTP in {timer} sec</>
+          )}
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
+export function ResetPassword() {
+  const { email } = useParams();
+  const [password, setPassword] = useState('');
+  const navigate = useNavigate();
 
-export function ResetPassword(){
-  let {user,setUser} = useContext(authContext)
-
-  let [password,setPassword] = useState('');
-  let navigate = useNavigate();
-
-  let {email} = useParams()
-
-  const handleSubmit=(event)=>{
-
-    console.log(event)
+  const handleSubmit = (event) => {
     event.preventDefault();
     axios
-      .put(`http://localhost:5000/auth/updatePassword?email=${email}`,{password:password})
+      .put(`${BASE_URL}/auth/updatePassword?email=${email}`, { password })
       .then(res => {
-        console.log(res)
-        toast.error(res.data.message)
-        navigate('/login',{replace:true})
-        console.log(res.data);
-        })
-      .catch(err => {alert(err.response.data.message);console.log(err);})
-  }
-
+        toast.success(res.data.message);
+        navigate('/login', { replace: true });
+      })
+      .catch(err => toast.error(err.response?.data?.message || err.message));
+  };
 
   return (
-    <div className="backgroundDiv bg-[#ebebeb]">
-      <div className="container flex flex-col gap-4 min-h-screen">
-     <ToastContainer/>
-         
-        <div className="passwordChange p-4 bg-gray-950 rounded-md border-amber-100 border-b-1">
-        <div className="header flex justify-between items-center font-bold text-white pb-4">
-          <span className="heading">Forgot Password</span>
-          <Link to='/ForgotPassword' className="back btn">Go Back</Link>
-        </div>
-
-
-        <div className="passwordContainer text-white flex flex-col gap-4 ">
-
-          <div className="current text-white flex flex-col sm:flex-row items-start sm:items-center gap-4">
-          <label htmlFor="currentPassword">Create New Password : </label>
-          <input type="password" name="currentPassword" id="currentPassword" value={password} placeholder='create New Password' className='border-1 py-1 px-2 rounded-md' pattern='^[a-zA-Z0-9]+$'
-         onChange={(e)=>{setPassword(e.target.value)}}/>
-          </div>
-
-        </div>
-        <div className="footer flex justify-between items-center text-white pt-6">
-          <span className='confirm btn' onClick={handleSubmit}>Confirm</span>
-          </div>
-        </div>
+    <div className="w-screen min-h-screen bg-black flex justify-center items-center p-4">
+      <div className="w-full max-w-md bg-[#12101D] rounded-xl p-6 flex flex-col gap-6 shadow-lg">
+        <h2 className="text-2xl font-bold text-white text-center">Reset Password</h2>
+        <form className="flex flex-col gap-4">
+          <input
+            type="password"
+            placeholder="Create New Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full px-4 py-2 rounded-md bg-black text-white border border-gray-700 focus:border-[#4242FA] outline-none"
+          />
+          <button
+            className="w-full py-2 bg-[#4242FA] text-white rounded-md hover:bg-opacity-90 transition"
+            onClick={handleSubmit}
+          >
+            Confirm
+          </button>
+          <Link to="/ForgotPassword" className="text-center text-[#4242FA] hover:underline mt-2">
+            Go Back
+          </Link>
+        </form>
       </div>
     </div>
-  )
+  );
 }
-

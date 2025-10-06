@@ -1,486 +1,308 @@
-import axios from 'axios'
-import "../../App.css"
-
-import { useState, useContext, useEffect } from 'react'
-import {Navigate, useLocation, Link,useNavigate } from 'react-router-dom'
-
-
+import axios from "axios";
+import "../../App.css";
+import { useState, useContext, useEffect } from "react";
+import { Navigate, useLocation, Link, useNavigate } from "react-router-dom";
 import { FaRegEye } from "react-icons/fa";
-import 'react-toastify/dist/ReactToastify.css';
-import { ToastContainer, toast } from 'react-toastify';
 import { IoIosEyeOff } from "react-icons/io";
 import { FaGoogle } from "react-icons/fa6";
 import { SiDash } from "react-icons/si";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { authContext } from "../../contexts/authContext";
 
-import { authContext } from '../../contexts/authContext'
-
-let BASE_URL = import.meta.env.VITE_SERVER_BASE_URL
-import { ForgotPassword } from './forgotPassword';
+let BASE_URL = import.meta.env.VITE_SERVER_BASE_URL;
 
 export function Login() {
-  const { user, setUser,login,authMessage } = useContext(authContext);
-  const [message, setMessage] = useState('');
-  const roles = ['admin', 'client', 'vendor'];
-  let [show,setShow] = useState(false)
-
-const params = new URLSearchParams(window.location.search);
-const token = params.get('token');
-
-
-useEffect(()=>{
-if(token){
-  localStorage.setItem('token',token);
-  window.location.href = 'http://localhost:5173/login'
-}
-},[])
-
-
-
+  const { user, setUser } = useContext(authContext);
+  const [showPassword, setShowPassword] = useState(false);
+  const [formData, setFormData] = useState({ role: "client", email: "", password: "" });
+  const roles = ["admin", "client", "vendor"];
   const navigate = useNavigate();
   const location = useLocation();
+  const from = location.state?.from || "/";
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get("token");
 
-  let from = location.state?.from || '/';
+  useEffect(() => {
+    if (token) {
+      localStorage.setItem("token", token);
+      window.location.href = "/login";
+    }
+  }, []);
 
-    console.log(from)
-
-
-  const [formData, setFormData] = useState({
-    role: 'client',
-    email: '',
-    password: ''
-  })
-
-  const handleSubmit = event => {
-    event.preventDefault();
+  const handleSubmit = (e) => {
+    e.preventDefault();
     axios
       .post(`${BASE_URL}/auth/login`, formData)
-      .then(res => {
+      .then((res) => {
         if (res.data.token) {
-          if(res.data.user.isSuspended){alert('your account got suspended')}
-          else{
-          setUser(res.data.user)
-          localStorage.setItem('token', res.data.token);
-          setMessage(res.data.message);
-          if(formData.role !== 'client'){
-            console.log(formData.role)
-            navigate(`/${formData.role}/`,{replace:true})
+          if (res.data.user.isSuspended) {
+            toast.error("Your account is suspended");
             return;
-          } else{
-          console.log(from)
-          navigate(from,{replace:true})
-          return;
           }
-          }
+          setUser(res.data.user);
+          localStorage.setItem("token", res.data.token);
+          navigate(formData.role !== "client" ? `/${formData.role}/` : from, { replace: true });
         }
       })
-      .catch(err => {console.log(err);toast.error(err.response.data.message);})
-  }
+      .catch((err) => toast.error(err.response?.data?.message || "Login failed"));
+  };
 
   const googleLogin = () => {
-  const CLIENT_ID = '486170631932-5s4abs9lgv958ptc06ho5705r50i2ccb.apps.googleusercontent.com';
-  const REDIRECT_URI = 'http://localhost:5000/auth/google/callback';
-  const SCOPE = 'openid email profile';
-  const RESPONSE_TYPE = 'code';
-
-  const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?response_type=${RESPONSE_TYPE}&client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&scope=${encodeURIComponent(SCOPE)}`;
-
-  window.location.href = googleAuthUrl;
-};
+    const CLIENT_ID = "486170631932-5s4abs9lgv958ptc06ho5705r50i2ccb.apps.googleusercontent.com";
+    const REDIRECT_URI = "http://localhost:5000/auth/google/callback";
+    const SCOPE = "openid email profile";
+    window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&scope=${encodeURIComponent(
+      SCOPE
+    )}`;
+  };
 
   const dauthLogin = () => {
-  const CLIENT_ID = 'lAOrfPy9uph9nGYe';
-  const REDIRECT_URI = 'http://localhost:5000/auth/dauth/callback';
-  const SCOPE = 'email+user+profile+openid';
-  const RESPONSE_TYPE = 'code';
+    const CLIENT_ID = "lAOrfPy9uph9nGYe";
+    const REDIRECT_URI = "http://localhost:5000/auth/dauth/callback";
+    const SCOPE = "email+user+profile+openid";
+    window.location.href = `https://auth.delta.nitt.edu/authorize?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&response_type=code&scope=${encodeURIComponent(
+      SCOPE
+    )}&state=xyz&nonce=abc`;
+  };
 
-  const dauthUrl = `https://auth.delta.nitt.edu/authorize?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&response_type=${RESPONSE_TYPE}&grant_type=authorization_code&state=sdafsdghb&scope=${encodeURIComponent(SCOPE)}&nonce=bscsbascbadcsbasccabs`;
+  if (user) return <Navigate to={from} replace />;
 
-  window.location.href = dauthUrl;
-};
+  return (
+    <div className="w-screen h-screen flex justify-center items-center bg-black text-white">
+      <div className="backdrop-blur-xl bg-white/10 border border-white/20 w-full max-w-[400px] rounded-2xl p-8 flex flex-col items-center gap-6 transition-all hover:shadow-[#ff3333]/30">
+        <h1 className="text-2xl font-bold text-[#ff3333]">Welcome Back</h1>
+        <p className="text-gray-300 text-sm">Login to continue your journey</p>
 
-
-  const handleChange = e => {
-    let { name, value } = e.target
-    setFormData(prev => ({ ...prev, [name]: value }))
-  }
-
-    if(user) {
-    return <Navigate to ={from} replace/>}
-
-   return (
-     <div className='bg-black w-screen h-screen flex justify-center items-center overflow-hidden'>
-      <div className='overflow-hidden bg-[#F8F8F8] min-w-[350px] max-w-[400px] w-[85%] rounded-2xl px-4 py-4 flex flex-col items-center justify-evenly shadow-blue-200 shadow-lg gap-3 neon-border'>
-        <div className='usersContainer flex flex-row justify-around items-center rounded-xl p-1 px-1 w-3/4 border-2 border-[#929090]'>
-          {roles.map(roleOption => (
+  
+        <div className="flex justify-around w-3/4 border border-gray-500 rounded-xl p-1">
+          {roles.map((role) => (
             <span
-              key={roleOption}
-              className={`role rounded-xl text-[16px] md:text-[18px] font-medium p-1 md:px-1 cursor-pointer ${
-                formData.role === roleOption ? 'bg-[#ff3333]' : 'bg-transparent'
+              key={role}
+              className={`px-3 py-1 rounded-lg text-sm font-medium cursor-pointer transition-all ${
+                formData.role === role ? "bg-[#ff3333] text-white" : "text-gray-300 hover:bg-[#ff3333]/20"
               }`}
-              onClick={() =>
-                setFormData(prev => ({ ...prev, role: roleOption }))
-              }
+              onClick={() => setFormData((prev) => ({ ...prev, role }))}
             >
-              {roleOption.charAt(0).toUpperCase() + roleOption.slice(1)}
+              {role.charAt(0).toUpperCase() + role.slice(1)}
             </span>
-            
           ))}
         </div>
 
-                <ToastContainer/> 
-
-        <div className='context flex flex-col justify-between items-center text-black'>
-          <h1 className='welcomeBack text-[#0092cc] text-[18px] md:text-[20px] font-semibold'>
-            Welcome Back
-          </h1>
-          <h3 className='enterDetails text-black text-[16px] md:text-[17px] font-medium'>
-            Please enter your details.
-          </h3>
-        </div>
-
-        <form
-          className='w-[70%] flex flex-col min-w-[200px] justify-evenly items-start gap-2 font-medium text-[12px]'
-          onSubmit={handleSubmit}
-        >
-          <label htmlFor='email' className='text-black font-medium text-[12px]'>
-            Email
-          </label>
+        <form className="w-full flex flex-col gap-3" onSubmit={handleSubmit}>
           <input
-            type='email'
-            id='email'
-            name='email'
-            placeholder='Enter your email'
-            className='rounded-lg p-1 pt-2 pl-3 text-[#636364] font-medium border-2 w-full focus:outline-none text-[12px]'
+            type="email"
+            name="email"
+            placeholder="Email"
+            className="bg-transparent border border-gray-400 rounded-lg p-2 w-full text-sm focus:outline-none text-white placeholder-gray-400"
+            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
             value={formData.email}
-            onChange={handleChange}
-          />
-
-
-          <label
-            htmlFor='password'
-            className='text-black font-medium text-[12px]'
-          >
-            Password
-          </label>
-          <input
-            type='password'
-            id='password'
-            name='password'
-            placeholder='*************'
-          
             required
-            className='rounded-lg p-1 text-[#636364] font-normal border-2 w-full pl-3 pt-2 focus:outline-none mb-3 text-[12px]'
-            value={formData.password}
-            onChange={handleChange}
           />
-
-          <div
-            className={`response w-full text-center text-[#EA454c] font-medium ${
-              message ? 'block' : 'none'
-            }`}
-          >
-            {message}
+          <div className="relative">
+            <input
+              type={showPassword ? "text" : "password"}
+              name="password"
+              placeholder="Password"
+              className="bg-transparent border border-gray-400 rounded-lg p-2 w-full text-sm focus:outline-none text-white placeholder-gray-400 pr-8"
+              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+              value={formData.password}
+              required
+            />
+            <span
+              className="absolute right-3 top-2.5 text-gray-400 cursor-pointer hover:text-white"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? <IoIosEyeOff size={18} /> : <FaRegEye size={18} />}
+            </span>
           </div>
 
-          <Link to='/ForgotPassword'
-            className={`response w-full text-center text-[#EA454c] font-medium `}>
-            Forgot Password?
-          </Link>
+          <div className="text-right">
+            <Link to="/ForgotPassword" className="text-[#ff3333] text-sm hover:underline">
+              Forgot Password?
+            </Link>
+          </div>
 
-        <ToastContainer/>
-          <button type='submit'
-            className='login w-[100%] text-white font-medium py-1 text-[13px] bg-[#ff3333] rounded-xl border-[#636364] border-2'
+          <button
+            type="submit"
+            className="w-full bg-[#ff3333] rounded-lg py-2 mt-2 font-semibold hover:bg-[#ff4d4d] transition-all"
           >
             Login
           </button>
-
         </form>
 
-        <div className=" justify-center items-center">
-  <span>OR</span>
-</div>
+        <div className="flex items-center gap-2 text-gray-400 text-sm">
+          <span className="flex-1 h-[1px] bg-gray-600" /> OR <span className="flex-1 h-[1px] bg-gray-600" />
+        </div>
 
-            <button className='googleContainer w-[100%] h-8 text-black font-normal text-lg bg-transparent flex justify-center items-center cursor-pointer'>
-            <div className='googleBox flex flex-row align-center gap-6'>
-              <FaGoogle className='hover:text-black hover:bg-white bg-black p-2 text-white size-10 transition-all duration-100 ease-linear rounded-full border-1 border-[#636363] hover:border-black' onClick={googleLogin}>
-              </FaGoogle>
-              <SiDash className='hover:text-black hover:bg-white bg-black text-white size-10 p-2 transition-all duration-100 ease-linear rounded-full border-1 border-[#636363] hover:border-black' onClick={dauthLogin}>
-              </SiDash >
-            </div>
-          </button>
+        <div className="flex gap-6">
+          <FaGoogle
+            className="bg-white text-black p-2 rounded-full text-4xl cursor-pointer hover:scale-110 transition-all"
+            onClick={googleLogin}
+          />
+          <SiDash
+            className="bg-white text-black p-2 rounded-full text-4xl cursor-pointer hover:scale-110 transition-all"
+            onClick={dauthLogin}
+          />
+        </div>
 
-          <div className='lastcontainer w-full items-center justify-center flex flex-col'>
-            <span className='donthaveaccount text-[#636364] font-medium text-[13px]'>
-              Don't have a account? <Link
-              to={'/signup'}
-              className='text-[#EA454c] font-bold text-[13px]'
-            >
-              SignUp for free!
-            </Link>
-            </span>
-           
-          </div>
+        <p className="text-gray-400 text-sm">
+          Don’t have an account?{" "}
+          <Link to="/signup" className="text-[#ff3333] font-semibold hover:underline">
+            Sign up
+          </Link>
+        </p>
+        <ToastContainer />
       </div>
     </div>
-  )
-}
-
-export function Signup () {
-  
-  const navigate = useNavigate()
-  const location = useLocation()
-
-  const from = location.state?.from || '/home';
-
-function validatePassword(password) {
-  const errors = [];
-
-  if (password.length < 6) {
-    errors.push("Minimum 6 characters required");
-  }
-  if (!/[a-z]/.test(password)) {
-    errors.push("At least one lowercase letter required");
-  }
-  if (!/[A-Z]/.test(password)) {
-    errors.push("At least one uppercase letter required");
-  }
-  if (!/\d/.test(password)) {
-    errors.push("At least one number required");
-  }
-  if (!/[@$!%*?&]/.test(password)) {
-    errors.push("At least one special character (@$!%*?&) required");
-  }
-
-  return errors;
-}
-
-const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-function handleValidation(e) {
-  const email = formData.email.trim();
-  const password = formData.password.trim();
-
-  if (!emailRegex.test(email)) {
-    toast.error('Enter a valid email');
-    return;
-  }
-
-  const result = validatePassword(password);
-  if (result.length > 0) {
-    const message = result.join(' ');
-    console.log("Invalid Password:", message);
-    toast.error(message);
-    return;
-  }
-
-  console.log("Password is valid!");
-  toast.success("Registration Successful");
-  handleSubmit(e);
+  );
 }
 
 
-  const { user, setUser } = useContext(authContext)
-  const [message, setMessage] = useState('')
-  const roles = ['client', 'vendor']
+export function Signup() {
+  const navigate = useNavigate();
+  const { user, setUser } = useContext(authContext);
+  const [showPassword, setShowPassword] = useState(false);
+  const [formData, setFormData] = useState({ role: "client", username: "", email: "", password: "" });
+  const roles = ["client", "vendor"];
+  const location = useLocation();
+  const from = location.state?.from || "/";
 
-  const [formData, setFormData] = useState({
-    role: 'client',
-    username: '',
-    email: '',
-    password: ''
-  })
+  const validatePassword = (password) => {
+    const errors = [];
+    if (password.length < 6) errors.push("Min 6 chars");
+    if (!/[a-z]/.test(password)) errors.push("1 lowercase");
+    if (!/[A-Z]/.test(password)) errors.push("1 uppercase");
+    if (!/\d/.test(password)) errors.push("1 number");
+    if (!/[@$!%*?&]/.test(password)) errors.push("1 special char");
+    return errors;
+  };
 
-    const googleLogin = () => {
-  const CLIENT_ID = '486170631932-5s4abs9lgv958ptc06ho5705r50i2ccb.apps.googleusercontent.com';
-  const REDIRECT_URI = 'http://localhost:5000/auth/google/callback';
-  const SCOPE = 'openid email profile';
-  const RESPONSE_TYPE = 'code';
+  const handleValidation = (e) => {
+    e.preventDefault();
+    const { email, password } = formData;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) return toast.error("Invalid email");
+    const errs = validatePassword(password);
+    if (errs.length) return toast.error(errs.join(", "));
+    handleSubmit(e);
+  };
 
-  const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?response_type=${RESPONSE_TYPE}&client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&scope=${encodeURIComponent(SCOPE)}`;
-
-  window.location.href = googleAuthUrl;
-};
-
-  const dauthLogin = () => {
-  const CLIENT_ID = 'lAOrfPy9uph9nGYe';
-  const REDIRECT_URI = 'http://localhost:5000/auth/dauth/callback';
-  const SCOPE = 'email+user+profile+openid';
-  const RESPONSE_TYPE = 'code';
-
-  const dauthUrl = `https://auth.delta.nitt.edu/authorize?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&response_type=${RESPONSE_TYPE}&grant_type=authorization_code&state=sdafsdghb&scope=${encodeURIComponent(SCOPE)}&nonce=bscsbascbadcsbasccabs`;
-
-  window.location.href = dauthUrl;
-};
-
-    if(user) {
-    return <Navigate to ={from} replace/>}
-
-
-
-  useEffect(()=>{
-  if(user) {console.log('returning becoz user exists')
-    return <Navigate to ={from} replace/>}
-  },[])
-
-  const handleSubmit = (event) => {
-    console.log('submitted')
+  const handleSubmit = (e) => {
+    e.preventDefault();
     axios
       .post(`${BASE_URL}/auth/register`, formData)
-      .then(res => {
-        setMessage(res.data.message)
-        console.log(res.data)
+      .then((res) => {
         if (res.data.token) {
-          setUser(res.data.user)
-          localStorage.setItem('token', res.data.token)
-          if(formData.role !== 'client'){
-            console.log(formData.role)
-            navigate(`/${formData.role}/`,{replace:true})
-            return;
-          } else{
-          console.log(from)
-          navigate(from,{replace:true})
-          return;
-          }
+          setUser(res.data.user);
+          localStorage.setItem("token", res.data.token);
+          navigate(formData.role !== "client" ? `/${formData.role}/` : from, { replace: true });
         }
       })
-      .catch(err => {
-        console.log(`${BASE_URL}/auth/register`);
-      })
-  }
+      .catch((err) => toast.error(err.response?.data?.message || "Signup failed"));
+  };
 
-  const handleChange = e => {
-    let { name, value } = e.target
-    setFormData(prev => ({ ...prev, [name]: value }))
-  }
+  if (user) return <Navigate to={from} replace />;
 
   return (
-     <div className='bg-black w-screen h-screen flex justify-center items-center overflow-hidden'>
-      <div className='overflow-hidden bg-[#F8F8F8] min-w-[350px] max-w-[400px] w-[85%] rounded-2xl px-4 py-4 flex flex-col items-center justify-evenly shadow-blue-200 shadow-lg gap-2 neon-border'>
-        <div className='usersContainer flex flex-row justify-around items-center rounded-xl p-1 px-1 w-3/4 border-2 border-[#929090]'>
-          {roles.map(roleOption => (
+    <div className="w-screen h-screen flex justify-center items-center bg-black to-[#1a0000] text-white">
+      <div className="bg-white/10 border border-white/20 w-full max-w-[400px] rounded-2xl p-8 flex flex-col items-center gap-6 transition-all hover:shadow-[#ff3333]/30">
+        <h1 className="text-2xl font-bold text-[#ff3333]">Create Account</h1>
+        <p className="text-gray-300 text-sm">Join us today!</p>
+
+        <div className="flex justify-around w-3/4 border border-gray-500 rounded-xl p-1">
+          {roles.map((role) => (
             <span
-              key={roleOption}
-              className={`role rounded-xl text-[14px] md:text-[16px] font-medium p-1 md:px-1 cursor-pointer ${
-                formData.role === roleOption ? 'bg-[#3399FF]' : 'bg-transparent'
+              key={role}
+              className={`px-3 py-1 rounded-lg text-sm font-medium cursor-pointer transition-all ${
+                formData.role === role ? "bg-[#ff3333] text-white" : "text-gray-300 hover:bg-[#ff3333]/20"
               }`}
-              onClick={() =>
-                setFormData(prev => ({ ...prev, role: roleOption }))
-              }
+              onClick={() => setFormData((prev) => ({ ...prev, role }))}
             >
-              {roleOption.charAt(0).toUpperCase() + roleOption.slice(1)}
+              {role.charAt(0).toUpperCase() + role.slice(1)}
             </span>
-            
           ))}
         </div>
 
-                <ToastContainer/> 
-
-        <div className='context flex flex-col justify-between items-center text-black'>
-          <h1 className='welcomeBack text-black text-[18px] md:text-[20px] font-medium'>
-            Create your Account
-          </h1>
-          <h3 className='enterDetails text-black text-[16px] md:text-[17px] font-medium'>
-            Please enter your details.
-          </h3>
-        </div>
-
-        <form
-          className='w-[70%] flex flex-col min-w-[200px] justify-evenly items-start gap-2 font-medium text-[12px]'
-          onSubmit={handleSubmit}
-        >
-          <label htmlFor='email' className='text-black font-medium text-[12px]'>
-            Email
-          </label>
+        <form className="w-full flex flex-col gap-3" onSubmit={handleValidation}>
           <input
-            type='email'
-            id='email'
-            name='email'
-            placeholder='Enter your email'
-            className='rounded-lg p-1 pt-2 pl-3 text-[#636364] font-medium border-2 w-full focus:outline-none text-[12px]'
-            value={formData.email}
-            onChange={handleChange}
-          />
-
-          <label
-            htmlFor='username'
-            className='text-black font-medium text-[12px]'
-          >
-            username
-          </label>
-          <input
-            type='text'
-            name='username'
-            id='username'
-            placeholder='Enter username'
-            className='rounded-lg p-1 text-[#636364] font-normal border-2 w-full pl-3 pt-2 focus:outline-none text-[12px]'
-            pattern="^(?!\s*$).+" 
+            type="text"
+            name="username"
+            placeholder="Username"
+            className="bg-transparent border border-gray-400 rounded-lg p-2 w-full text-sm text-white placeholder-gray-400 focus:outline-none"
+            onChange={(e) => setFormData({ ...formData, username: e.target.value })}
             required
-            value={formData.username}
-            onChange={handleChange}
           />
-
-          <label
-            htmlFor='password'
-            className='text-black font-medium text-[12px]'
-          >
-            Password
-          </label>
           <input
-            type='password'
-            id='password'
-            name='password'
-            placeholder='*************'
-          
+            type="email"
+            name="email"
+            placeholder="Email"
+            className="bg-transparent border border-gray-400 rounded-lg p-2 w-full text-sm text-white placeholder-gray-400 focus:outline-none"
+            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
             required
-            className='rounded-lg p-1 text-[#636364] font-normal border-2 w-full pl-3 pt-2 focus:outline-none mb-3 text-[12px]'
-            value={formData.password}
-            onChange={handleChange}
           />
-
-          <div
-            className={`response w-full text-center text-[#EA454c] font-medium ${
-              message ? 'block' : 'none'
-            }`}
-          >
-            {message}
+          <div className="relative">
+            <input
+              type={showPassword ? "text" : "password"}
+              name="password"
+              placeholder="Password"
+              className="bg-transparent border border-gray-400 rounded-lg p-2 w-full text-sm text-white placeholder-gray-400 focus:outline-none pr-8"
+              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+              required
+            />
+            <span
+              className="absolute right-3 top-2.5 text-gray-400 cursor-pointer hover:text-white"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? <IoIosEyeOff size={18} /> : <FaRegEye size={18} />}
+            </span>
           </div>
-        <ToastContainer/>
-          <button type='button'
-            className='login w-[100%] text-white font-medium py-1 text-[13px] bg-[#EA454c] rounded-xl border-[#636364] border-2'
-            onClick={(e)=>{
-              handleValidation(e)
-            }}
-          >
-            Signup
-          </button>
 
+          <button
+            type="submit"
+            className="w-full bg-[#ff3333] rounded-lg py-2 mt-2 font-semibold hover:bg-[#ff4d4d] transition-all"
+          >
+            Sign Up
+          </button>
         </form>
 
-        <div className=" justify-center items-center">
-  <span>OR</span>
-</div>
+        <div className="flex items-center gap-2 text-gray-400 text-sm">
+          <span className="flex-1 h-[1px] bg-gray-600" /> OR <span className="flex-1 h-[1px] bg-gray-600" />
+        </div>
 
-            <button className='googleContainer w-[100%] h-8 text-black font-normal text-lg bg-transparent flex justify-center items-center cursor-pointer'>
-            <div className='googleBox flex flex-row align-center gap-6'>
-              <FaGoogle className='hover:text-black hover:bg-white bg-black p-2 text-white size-10 transition-all duration-100 ease-linear rounded-full border-1 border-[#636363] hover:border-black' onClick={googleLogin}>
-              </FaGoogle>
-              <SiDash className='hover:text-black hover:bg-white bg-black text-white size-10 p-2 transition-all duration-100 ease-linear rounded-full border-1 border-[#636363] hover:border-black' onClick={dauthLogin}>
-              </SiDash >
-            </div>
-          </button>
+        <div className="flex gap-6">
+          <FaGoogle
+            className="bg-white text-black p-2 rounded-full text-4xl cursor-pointer hover:scale-110 transition-all"
+            onClick={() => {
+              const CLIENT_ID = "486170631932-5s4abs9lgv958ptc06ho5705r50i2ccb.apps.googleusercontent.com";
+              const REDIRECT_URI = "http://localhost:5000/auth/google/callback";
+              const SCOPE = "openid email profile";
+              window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&scope=${encodeURIComponent(
+                SCOPE
+              )}`;
+            }}
+          />
+          <SiDash
+            className="bg-white text-black p-2 rounded-full text-4xl cursor-pointer hover:scale-110 transition-all"
+            onClick={() => {
+              const CLIENT_ID = "lAOrfPy9uph9nGYe";
+              const REDIRECT_URI = "http://localhost:5000/auth/dauth/callback";
+              const SCOPE = "email+user+profile+openid";
+              window.location.href = `https://auth.delta.nitt.edu/authorize?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&response_type=code&scope=${encodeURIComponent(
+                SCOPE
+              )}&state=xyz&nonce=abc`;
+            }}
+          />
+        </div>
 
-          <div className='lastcontainer w-full items-center justify-center flex flex-col'>
-            <span className='donthaveaccount text-[#636364] font-medium text-[13px]'>
-              Already registered? <Link
-              to={'/login'}
-              className='text-[#EA454c] font-bold text-[13px]'
-            >
-              Login for free!
-            </Link>
-            </span>
-           
-          </div>
+        <p className="text-gray-400 text-sm">
+          Already have an account?{" "}
+          <Link to="/login" className="text-[#ff3333] font-semibold hover:underline">
+            Login
+          </Link>
+        </p>
+        <ToastContainer />
       </div>
     </div>
-  )
+  );
 }

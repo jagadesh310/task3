@@ -56,7 +56,7 @@ export const TrainBooking = () => {
   }, [])
 
   return (
-    <div className='backgroundDiv'>
+    <div className='backgroundDiv min-h-screen'>
       {loading ? (
         <Loader />
       ) : (

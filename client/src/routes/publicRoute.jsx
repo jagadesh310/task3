@@ -1,13 +1,13 @@
 import axios from 'axios'
 
-import { Outlet} from 'react-router-dom'
-import {useContext } from 'react'
+import { Outlet, useLocation, Navigate,useNavigate } from 'react-router-dom'
+import { useEffect, useContext } from 'react'
 
 import { authContext } from '../contexts/authContext'
-import Header from './header'
-import Footer from './footer'
-import Loader from './loader'
 
+import Header from '../components/header'
+import Footer from '../components/footer'
+import Loader from '../components/loader'
 // import jwt from "jsonwebtoken";
 
 export function PublicRoute () {
